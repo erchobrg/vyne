@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap">
+    <link rel="icon" href="ectryn/fav.ico" type="image/x-icon"> <!-- Link to the favicon -->
+    <style>
+        body {
+            font-family: 'Fredoka One', cursive;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: transparent;
+            padding: 1rem;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            display: none; /* Hide by default */
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #ddd;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Fredoka One', cursive;
+        }
+        button {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Fredoka One', cursive;
+        }
+        button:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <form id="login-form">
+        <div class="error-message" id="error-message">Key already used. Please try another one.</div>
+        <h1>Enter Invite Key</h1>
+        <label for="invite-key">Invite Key</label>
+        <input type="text" id="invite-key" name="invite-key" placeholder="Enter invite key" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        const usedCodesKey = 'usedCodes'; // Key used to store previously used codes
+
+        function getStoredCodes() {
+            const codes = localStorage.getItem(usedCodesKey);
+            return codes ? JSON.parse(codes) : [];
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const enteredKey = document.getElementById('invite-key').value;
+            const storedCodes = getStoredCodes();
+
+            if (storedCodes.includes(enteredKey)) {
+                // Remove the key from storage to ensure it can't be used again
+                localStorage.setItem(usedCodesKey, JSON.stringify(storedCodes.filter(code => code !== enteredKey)));
+                window.location.href = 'trip6000.html'; // Redirect to the desired page
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

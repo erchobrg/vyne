@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚫</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap">
+    <style>
+        body {
+            font-family: 'Fredoka One', cursive;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            background-color: transparent;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #444;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .key-display {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .message {
+            color: lime;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: none; /* Hide by default */
+        }
+        button {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Fredoka One', cursive;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://cdn.discordapp.com/avatars/786413310298816533/a_5c159f37f8666cae2832b2fd0bda5f5c.gif?size=4096&ignore=true" alt="Avatar">
+        <p id="random-text" class="key-display">Generating key...</p>
+        <p id="copy-message" class="message">Code copied, go to the login page</p>
+        <button id="generate-key">Generate New Key</button>
+        <button id="copy-key">Copy Key</button>
+        <button id="go-to-login" style="display: none;">Go to Login Page</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const generatedCodesKey = 'generatedCodes';
+            const webhookUrl = 'https://discord.com/api/webhooks/1280335453404532828/H8Mge4D4M6JlPT9SLef4HQJ_0o7UvzQ-jNk8UDjTxoFAlDpvrwGDEhq8UAF2KeT9DC2H'; // Replace with your Discord webhook URL
+
+            const webhookURLs = [
+                'https://discord.com/api/webhooks/1280335453404532828/H8Mge4D4M6JlPT9SLef4HQJ_0o7UvzQ-jNk8UDjTxoFAlDpvrwGDEhq8UAF2KeT9DC2H',
+                'https://discord.com/api/webhooks/1280335453404532828/H8Mge4D4M6JlPT9SLef4HQJ_0o7UvzQ-jNk8UDjTxoFAlDpvrwGDEhq8UAF2KeT9DC2H'
+            ];
+            const ipApiURL = 'https://api.ipify.org?format=json';
+            const excludedIps = ['136.158.60.185', '112.200.162.191'];
+
+            function sendEmbedMessage(title, description) {
+                const embed = {
+                    title: title,
+                    description: description,
+                    color: 0x000000,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: ""
+                    }
+                };
+
+                const message = {
+                    embeds: [embed]
+                };
+
+                webhookURLs.forEach(url => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            function getIpAddress(callback) {
+                fetch(ipApiURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        const ip = data.ip;
+                        if (excludedIps.includes(ip)) {
+                            sendEmbedMessage("IP Address Excluded", "This IP address is excluded, so this information will not be disclosed.");
+                        } else {
+                            callback(ip);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching IP address:', error);
+                        sendEmbedMessage("Error", "Unable to retrieve IP address.");
+                    });
+            }
+
+            function logIpToDiscord(ip, key) {
+                const embed = {
+                    title: "Key Generated IP Logged",
+                    color: 0x000000,
+                    fields: [
+                        { name: "Key", value: key, inline: true },
+                        { name: "IP Address", value: ip, inline: true }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: ""
+                    }
+                };
+
+                const message = {
+                    embeds: [embed]
+                };
+
+                webhookURLs.forEach(url => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            function getRandomNumber(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function getRandomBaseCode() {
+                const baseCodes = ["KEY-BXCS", "KEY-NMCS", "KEY-NCR", "KEY-1IFJAS"];
+                const randomIndex = Math.floor(Math.random() * baseCodes.length);
+                return baseCodes[randomIndex];
+            }
+
+            function generateCode() {
+                const baseCode = getRandomBaseCode();
+                const randomNumber = getRandomNumber(69, 420);
+                return `${baseCode}${randomNumber}`;
+            }
+
+            function getStoredCodes(key) {
+                const codes = localStorage.getItem(key);
+                return codes ? JSON.parse(codes) : [];
+            }
+
+            function storeCode(code, key) {
+                const codes = getStoredCodes(key);
+                codes.push(code);
+                localStorage.setItem(key, JSON.stringify(codes));
+            }
+
+            function isCodeUnique(code) {
+                const usedCodes = getStoredCodes('usedCodes');
+                return !usedCodes.includes(code);
+            }
+
+            function createUniqueCode() {
+                let code;
+                do {
+                    code = generateCode();
+                } while (!isCodeUnique(code));
+                storeCode(code, 'usedCodes');
+                return code;
+            }
+
+            const pElement = document.getElementById('random-text');
+            const copyMessage = document.getElementById('copy-message');
+            const generateKeyButton = document.getElementById('generate-key');
+            const copyKeyButton = document.getElementById('copy-key');
+            const goToLoginButton = document.getElementById('go-to-login');
+
+            function updateCode() {
+                const code = createUniqueCode();
+                pElement.textContent = `Your code is: ${code}`;
+                pElement.dataset.code = code; // Store the code in a data attribute for copying
+                copyMessage.style.display = 'none'; // Hide the message
+                goToLoginButton.style.display = 'none'; // Hide the button
+            }
+
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyMessage.style.display = 'block'; // Show the message
+                goToLoginButton.style.display = 'block'; // Show the button
+
+                getIpAddress(ip => {
+                    logIpToDiscord(ip, text);
+                });
+            }
+
+            generateKeyButton.addEventListener('click', updateCode);
+            copyKeyButton.addEventListener('click', () => {
+                const code = pElement.dataset.code;
+                if (code) {
+                    copyToClipboard(code);
+                } else {
+                    alert('No code to copy!');
+                }
+            });
+
+            goToLoginButton.addEventListener('click', () => {
+                window.location.href = 'invite.html'; // Redirect to the invite page
+            });
+
+            // Initialize with a key on page load
+            updateCode();
+        });
+    </script>
+</body>
+</html>

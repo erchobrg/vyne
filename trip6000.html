@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎀</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap">
+    <link rel="icon" href="ectryn/fav.ico" type="image/x-icon"> <!-- Link to the favicon -->
+    <style>
+        body {
+            font-family: 'Fredoka One', cursive;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+            position: relative;
+        }
+        .form-container {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #ddd;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #222;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Fredoka One', cursive;
+        }
+        button {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Fredoka One', cursive;
+            margin-right: 1rem;
+        }
+        button:hover {
+            background-color: #666;
+        }
+        .notification {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0f0; /* Neon green */
+            color: #000; /* Text color for contrast */
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            box-shadow: 0 0 10px #0f0; /* Neon glow effect */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 3;
+        }
+        .notification.show {
+            opacity: 1;
+        }
+        .embed-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification">Sent</div>
+    <div class="form-container">
+        <h1>xd6000 (beta)</h1>
+        <form id="message-form">
+            <label for="webhook-url">Webhook URL</label>
+            <input type="text" id="webhook-url" name="webhook-url" placeholder="Enter webhook URL" required>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" placeholder="Enter your message here" required></textarea>
+            <button type="submit" id="send-button">Send</button>
+            <button type="button" id="embed-toggle">Embed Mode</button>
+            <div class="embed-container" id="embed-container">
+                <label for="embed-title">Embed Title</label>
+                <input type="text" id="embed-title" name="embed-title" placeholder="Enter embed title">
+                <label for="embed-color">Embed Color</label>
+                <input type="color" id="embed-color" value="#000000"> <!-- Default color is black -->
+            </div>
+        </form>
+    </div>
+    <script>
+        const embedToggle = document.getElementById('embed-toggle');
+        const embedContainer = document.getElementById('embed-container');
+        const embedTitleInput = document.getElementById('embed-title');
+        const embedColorInput = document.getElementById('embed-color');
+        const notification = document.getElementById('notification');
+        
+        function checkAuthentication() {
+            const authenticated = localStorage.getItem('authenticated');
+            if (authenticated !== 'true') {
+                window.location.href = 'invite.html'; // Redirect to invite page if not authenticated
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('embedMode', embedMode);
+            localStorage.setItem('embedTitle', embedTitleInput.value);
+            localStorage.setItem('embedColor', embedColorInput.value);
+        }
+
+        function sendMessageToWebhook(webhookUrl, message, isEmbed = false, embedTitle = '', embedColor = '#000000') {
+            const payload = isEmbed ? {
+                embeds: [{
+                    title: embedTitle,
+                    description: message,
+                    color: parseInt(embedColor.slice(1), 16) // Convert color from hex to integer
+                }]
+            } : { content: message };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message sent:', data);
+                showNotification();
+            })
+            .catch(error => console.error('Error sending message:', error));
+        }
+
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const webhookUrl = document.getElementById('webhook-url').value;
+            const message = document.getElementById('message').value;
+            const embedTitle = embedTitleInput.value;
+            const embedColor = embedColorInput.value;
+
+            sendMessageToWebhook(webhookUrl, message, embedMode, embedTitle, embedColor);
+        }
+
+        function toggleEmbedMode() {
+            embedMode = !embedMode;
+            embedToggle.textContent = embedMode ? 'Disable Embed Mode' : 'Enable Embed Mode';
+            embedContainer.style.display = embedMode ? 'block' : 'none';
+            saveSettings();
+        }
+
+        window.onload = function() {
+            checkAuthentication(); // Check authentication on page load
+            
+            // Retrieve settings from local storage
+            const savedEmbedMode = localStorage.getItem('embedMode') === 'true';
+            const savedEmbedTitle = localStorage.getItem('embedTitle');
+            const savedEmbedColor = localStorage.getItem('embedColor');
+            
+            // Set initial state based on saved settings
+            embedMode = savedEmbedMode;
+            embedToggle.textContent = embedMode ? 'Disable Embed Mode' : 'Enable Embed Mode';
+            embedContainer.style.display = embedMode ? 'block' : 'none';
+            if (savedEmbedTitle) {
+                embedTitleInput.value = savedEmbedTitle;
+            }
+            if (savedEmbedColor) {
+                embedColorInput.value = savedEmbedColor;
+            }
+
+            // Add event listeners
+            const form = document.getElementById('message-form');
+            form.addEventListener('submit', handleFormSubmit);
+
+            embedToggle.addEventListener('click', toggleEmbedMode);
+        }
+    </script>
+</body>
+</html>
